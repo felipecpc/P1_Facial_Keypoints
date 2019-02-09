@@ -13,25 +13,71 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         
-        ## TODO: Define all the layers of this CNN, the only requirements are:
-        ## 1. This network takes in a square (same width and height), grayscale image as input
-        ## 2. It ends with a linear layer that represents the keypoints
-        ## it's suggested that you make this last layer output 136 values, 2 for each of the 68 keypoint (x, y) pairs
+        # ---------------------------------
+        # Layer Details:
+        # ---------------------------------
         
-        # As an example, you've been given a convolutional layer, which you may (but don't have to) change:
-        # 1 input image channel (grayscale), 32 output channels/feature maps, 5x5 square convolution kernel
-        self.conv1 = nn.Conv2d(1, 32, 5)
         
-        ## Note that among the layers to add, consider including:
-        # maxpooling layers, multiple conv layers, fully-connected layers, and other layers (such as dropout or batch normalization) to avoid overfitting
+        # LAYER 1
+        # Convolution2d1 32  (4x4)
+        self.conv_d1 = nn.Conv2d(1, 32, 4)
+        self.pool_d1 = nn.MaxPool2d(2, 0)
+        self.drop_d1 = nn.Dropout(p=0.1)
         
-
+        # LAYER 2
+        # Convolution2d2 64  (3x3)
+        self.conv_d2 = nn.Conv2d(32, 64, 3)
+        self.pool_d2 = nn.MaxPool2d(2, 0)
+        self.drop_d2 = nn.Dropout(p=0.2)
+        
+        # LAYER 3
+        # Convolution2d3 128 (2x2)
+        self.conv_d3 = nn.Conv2d(64, 128, 2)
+        self.pool_d3 = nn.MaxPool2d(2, 0)
+        self.drop_d3 = nn.Dropout(p=0.3)
+        
+        # LAYER 4
+        # Convolution2d4 256 (1x1)   
+        self.conv_d4 = nn.Conv2d(128, 256, 1)
+        self.pool_d4 = nn.MaxPool2d(2, 0)
+        self.drop_d4 = nn.Dropout(p=0.4)
+        
+        self.drop_d5 = nn.Dropout(p=0.5)
+        self.drop_d6 = nn.Dropout(p=0.6)
+        
+        self.fc1 = nn.Linear(43264, 1000)
+        self.fc2 = nn.Linear(1000, 1000)
+        self.fc3 = nn.Linear(1000, 136)
+        
+        
         
     def forward(self, x):
-        ## TODO: Define the feedforward behavior of this model
-        ## x is the input image and, as an example, here you may choose to include a pool/conv step:
-        ## x = self.pool(F.relu(self.conv1(x)))
+        # Layer 1
+        x = self.pool_d1(F.relu(self.conv_d1(x)))
+        x = self.drop_d1(x)
+
+
+        # Layer 2
+        x = self.pool_d2(F.relu(self.conv_d2(x)))
+        x = self.drop_d2(x)
+
+        # Layer 3
+        x = self.pool_d3(F.relu(self.conv_d3(x)))
+        x = self.drop_d3(x)
+
+         # Layer 4
+        x = self.pool_d4(F.relu(self.conv_d4(x)))
+        x = self.drop_d4(x)
+
+        # Flatten
+        x = x.view(x.size(0), -1)
         
+        x = F.relu(self.fc1(x))
+        x = self.drop_d5(x)
         
-        # a modified x, having gone through all the layers of your model, should be returned
+        x = F.relu(self.fc2(x))
+        x = self.drop_d6(x) 
+     
+        x = self.fc3(x)
+
         return x
